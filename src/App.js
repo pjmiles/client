@@ -24,6 +24,7 @@ function App() {
   const [map, setMap] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [locations, setLocations] = useState([]);
+  const [selectedLocation, setSelectedLocation] = useState(null);
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
@@ -71,6 +72,7 @@ function App() {
       lng: e.latLng.lng(),
     };
     setLocations([...locations, latLng]);
+    setSelectedLocation(latLng);
   };
 
   return (
@@ -118,7 +120,11 @@ function App() {
           </p>
         </div>
       )}
-      <UserDetailModal isOpen={isModalOpen} onClose={closeModal} />
+      <UserDetailModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        location={selectedLocation}
+      />
     </div>
   );
 }

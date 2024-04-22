@@ -1,12 +1,14 @@
 import { useState } from "react";
-import axios from "axios";
+import axiosInstance from "../axios";
 
-const UserDetailModal = ({ isOpen, onClose, onSubmit }) => {
+const UserDetailModal = ({ isOpen, onClose, location }) => {
   const [formData, setFormData] = useState({
     name: "",
     address: "",
     phoneNumber: "",
   });
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -19,12 +21,22 @@ const UserDetailModal = ({ isOpen, onClose, onSubmit }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const result = await axios.post(`http://localhost:5000/users/`, { formData });
-      onClose();
-      console.log(formData);
+      const userData = {
+        ...formData,
+        lat: location.lat,
+        lng: location.lng,
+      };
+      const result = await axiosInstance.post("/users", userData);
+      if (result.status === 201) {
+        setMessage(result.data.message);
+      }
+      console.log(result);
       return result;
     } catch (e) {
-      console.log(e);
+      setError(
+        "There was an issue submitting your details. Please try again later."
+      );
+      console.error(e);
     }
   };
 
@@ -35,6 +47,8 @@ const UserDetailModal = ({ isOpen, onClose, onSubmit }) => {
           <div className="absolute inset-0 bg-gray-900 opacity-50"></div>
           <div className="bg-white p-8 rounded-lg z-50">
             <h2 className="text-lg font-semibold mb-4">Customer Details</h2>
+            {error && <div className="mb-4 text-red-600">{error}</div>}
+            {message && <div className="mb-4 text-green-600">{message}</div>}
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
                 <label htmlFor="name" className="block mb-2">
@@ -42,7 +56,6 @@ const UserDetailModal = ({ isOpen, onClose, onSubmit }) => {
                 </label>
                 <input
                   type="text"
-                  id="name"
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
@@ -56,7 +69,6 @@ const UserDetailModal = ({ isOpen, onClose, onSubmit }) => {
                 </label>
                 <input
                   type="text"
-                  id="address"
                   name="address"
                   value={formData.address}
                   onChange={handleInputChange}
@@ -70,7 +82,6 @@ const UserDetailModal = ({ isOpen, onClose, onSubmit }) => {
                 </label>
                 <input
                   type="number"
-                  id="phoneNumber"
                   name="phoneNumber"
                   value={formData.phoneNumber}
                   onChange={handleInputChange}
